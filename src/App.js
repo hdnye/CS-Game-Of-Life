@@ -2,18 +2,7 @@ import React from 'react';
 import './App.css';
 
 
-export default class GameOfLife extends React.Component {
-    static field = {
-        columnsAmount: 61,
-        rowsAmount: 41,
-    };
-    static cellState = {
-        ALIVE: true,
-        DEAD: false,
-    };
-
-    // region Initialization
-
+export default class GameOfLife extends React.Component {   
     constructor(props) {
         super(props);
 
@@ -25,6 +14,17 @@ export default class GameOfLife extends React.Component {
         setInterval(() => this.live(), 200)
     }
 
+  // Set static properties
+  static field = {
+    columnsAmount: 61,
+    rowsAmount: 41,
+  };
+  static cellState = {
+    ALIVE: true,
+    DEAD: false,
+  };
+
+  // create cell structure for grid
     initializeCells() {
         let cells = [];
 
@@ -37,11 +37,8 @@ export default class GameOfLife extends React.Component {
 
         return cells;
     }
-
-    // endregion
-
-    // region Game update logic
-
+  
+   // start game
     live() {
         if (!this.state.isGameRunning) {
             return;
@@ -59,6 +56,7 @@ export default class GameOfLife extends React.Component {
         this.setState({cells: newCells})
     }
 
+    // find new cell state after comparing to neighbor's cell state
     computeNewCellState(columnIndex, rowIndex) {
         const aliveNeighboursAmount = this.computeAliveNeighboursAmount(columnIndex, rowIndex);
         const currentCellState = this.state.cells[columnIndex][rowIndex];
@@ -80,6 +78,7 @@ export default class GameOfLife extends React.Component {
         return GameOfLife.cellState.DEAD;
     }
 
+    // find neighbor's cell state
     computeAliveNeighboursAmount(columnIndex, rowIndex) {
         let aliveNeighboursAmount = 0;
 
@@ -117,10 +116,7 @@ export default class GameOfLife extends React.Component {
         return aliveNeighboursAmount;
     }
 
-    // endregion
-
-    // region User Interactions
-
+    // update cells on grid upon cell state change
     toggleCellState(columnIndex, rowIndex) {
         const newCellsState = this.state.cells;
 
@@ -129,17 +125,16 @@ export default class GameOfLife extends React.Component {
         this.setState({state: newCellsState})
     }
 
+    // turn game on or off
     toggleIsGameRunning() {
         this.setState({isGameRunning: !this.state.isGameRunning})
     }
 
-    // endregion
-
-    // region Rendering
-
+ 
+    // create grid
     renderCells() {
         return (
-            <div className="GameOfLife__cells">
+            <div className="cells">
                 {this.state.cells.map((rows, columnIndex) => {
                     return this.renderColumn(rows, columnIndex)
                 })}
@@ -147,13 +142,14 @@ export default class GameOfLife extends React.Component {
         );
     }
 
+    // change cells upon user input & toggle cell state
     renderColumn(rows, columnIndex) {
         return (
-            <div className="GameOfLife__column" key={`column_${columnIndex}`}>
+            <div className="cols" key={`column_${columnIndex}`}>
                 {rows.map((cellState, rowIndex) => {
                     const cellModifier = cellState === GameOfLife.cellState.DEAD ? 'dead' : 'alive';
                     return <div
-                        className={`GameOfLife__cell GameOfLife__cell--${cellModifier}`}
+                        className={`cells cells--${cellModifier}`}
                         key={`cell_${columnIndex}_${rowIndex}`}
                         onClick={() => this.toggleCellState(columnIndex, rowIndex)}
                     />
@@ -167,7 +163,7 @@ export default class GameOfLife extends React.Component {
 
         return (
             <button
-                className="GameOfLife__startGameButton"
+                className="Button"
                 onClick={() => this.toggleIsGameRunning()}
             >
                 {buttonLabel}
@@ -177,13 +173,10 @@ export default class GameOfLife extends React.Component {
 
     render() {
         return (
-            <div className="GameOfLife">
+            <div className="App">
                 {this.renderStartGameButton()}
                 {this.renderCells()}
             </div>
         );
     };
-
-    // endregion
-
-}
+ }
