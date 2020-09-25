@@ -20,6 +20,5 @@
     - Repeat previous 2 steps for each generation     
 
 # What problem does it solve?
-   A way to visualize pattern evolution utlizing a simple set of behavioural rules for each cell. In the absence of 
-   a predetermined outcome, it shows emergence and self-organization are possible w/o prior design or programming 
+   A way to visualize pattern evolution utlizing a simple set of behavioural rules for each cell. In the absence of a predetermined outcome, it shows emergence and self-organization are possible w/o prior design or programming 
 

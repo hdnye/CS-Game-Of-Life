@@ -14,7 +14,7 @@ export default class GameOfLife extends React.Component {
         setInterval(() => this.isLive(), 200)
     }
 
-  // Set static properties
+  // Set static board properties
   static field = {
     columnsAmount: 61,
     rowsAmount: 41,
@@ -115,7 +115,7 @@ export default class GameOfLife extends React.Component {
 
         return aliveNeighboursAmount;
     }
-
+ 
     // update cells on grid upon cell state change
     toggleCellState(cols, rows) {
         const newCellsState = this.state.cells;
