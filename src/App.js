@@ -1,95 +1,89 @@
 import React from 'react';
 import './App.css';
 
+export default class GameOfLife extends React.Component {
 
-const cell = 20;
-const width = 800;
-const height = 600;
-
-class App extends React.Component {
-  constructor() {
-    super();
-    this.rows = height / cell;
-    this.cols = width / cell;
-    this.grid = this.initializeGrid();
-
-    this.state = {
-      cells: [],
-      gameRunning: false,
-    };
-    setInterval(() => this.running(), 100);
-  }
-
+  static field = {
+    columnsAmount: 61,
+    rowsAmount: 41,
+  };
   static cellState = {
-    alive: true,
-    dead: false,
+    ALIVE: true,
+    DEAD: false,
   };
 
-  // create grid
-  initializeGrid() {
-    let grid = [];
-    for (let i = 0; i < this.rows; i++) {
-      grid[i] = [];
-      for (let j = 0; j < this.cols; j++) {
-        grid[i][j] = false;
-      }
-    }
-    return grid;
+  // region Initialization
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      cells: this.initializeCells(),
+      isGameRunning: false,
+    };
+
+    setInterval(() => this.live(), 200)
   }
 
-  // populate grid with cells
-  initalizeCells() {
+  initializeCells() {
     let cells = [];
-    for (let i = 0; i < this.rows; i++) {
-      for (let j = 0; j < this.cols; j++) {
-        if (this.grid[i][j]) {
-          cells.push({ i, j });
-        }
+
+    for (let columnIndex = 0; columnIndex < GameOfLife.field.columnsAmount; columnIndex++) {
+      cells[columnIndex] = [];
+      for (let rowIndex = 0; rowIndex < GameOfLife.field.rowsAmount; rowIndex++) {
+        cells[columnIndex][rowIndex] = GameOfLife.cellState.DEAD;
       }
     }
+
     return cells;
   }
 
-  // if game is running
-  running() {
-    if (!this.state.gameRunning) {
+  // endregion
+
+  // region Game update logic
+
+  live() {
+    if (!this.state.isGameRunning) {
       return;
     }
+
     const newCells = [];
-    for (let i = 0; i < this.cols; i++) {
-      newCells[i] = [];
-      for (let j = 0; j < this.rows; j++) {
-        newCells[i][j] = this.findCellNeighborState(i, j);
+
+    for (let columnIndex = 0; columnIndex < GameOfLife.field.columnsAmount; columnIndex++) {
+      newCells[columnIndex] = [];
+      for (let rowIndex = 0; rowIndex < GameOfLife.field.rowsAmount; rowIndex++) {
+        newCells[columnIndex][rowIndex] = this.computeNewCellState(columnIndex, rowIndex)
       }
     }
-    this.setState({ cells: newCells });
+
+    this.setState({ cells: newCells })
   }
 
-  // find cell neighbor state
-  findCellNeighborState() {
-    const aliveNeighbors = this.findCellState(this.rows, this.cols);
-    const curCellState = this.state.cells[this.rows][this.cols];
+  computeNewCellState(columnIndex, rowIndex) {
+    const aliveNeighboursAmount = this.computeAliveNeighboursAmount(columnIndex, rowIndex);
+    const currentCellState = this.state.cells[columnIndex][rowIndex];
 
-    if (curCellState === this.cellState.alive) {
-      if (aliveNeighbors < 2) {
-        return this.cellState.dead;
-      } else if (aliveNeighbors === 2 || aliveNeighbors === 3) {
-        return this.cellState.alive;
-      } else if (aliveNeighbors > 3) {
-        return this.cellState.dead;
+    if (currentCellState === GameOfLife.cellState.ALIVE) {
+      if (aliveNeighboursAmount < 2) {
+        return GameOfLife.cellState.DEAD;
+      } else if (aliveNeighboursAmount === 2 || aliveNeighboursAmount === 3) {
+        return GameOfLife.cellState.ALIVE;
+      } else if (aliveNeighboursAmount > 3) {
+        return GameOfLife.cellState.DEAD;
       }
     } else {
-      if (aliveNeighbors === 3) {
-        return this.cellState.alive;
+      if (aliveNeighboursAmount === 3) {
+        return GameOfLife.cellState.ALIVE;
       }
     }
-    return this.cellState.dead;
-  }
-// find cell state
-  findCellState() {
-    let aliveNeighbors = 0;
 
-    const neighborStates = [
+    return GameOfLife.cellState.DEAD;
+  }
+
+  computeAliveNeighboursAmount(columnIndex, rowIndex) {
+    let aliveNeighboursAmount = 0;
+
+    const neighbourOffsets = [
       [-1, 0], // left
       [-1, 1], // top left
       [0, 1], // top
@@ -100,64 +94,96 @@ class App extends React.Component {
       [-1, -1], // bottom left
     ];
 
-    for (const neighborStatesKey in neighborStates) {
-      const [xStates, yStates] = neighborStates[neighborStatesKey];
+    for (const neighbourOffsetKey in neighbourOffsets) {
+      const [xOffset, yOffset] = neighbourOffsets[neighbourOffsetKey];
 
-      let newColState = this.cols + xStates;
-      let newRowState = this.rows + yStates;
+      let newColumnOffset = columnIndex + xOffset;
+      let newRowOffset = rowIndex + yOffset;
 
-      if (newColState < 0 || newColState > this.cols - 1) {
+      // Check boundaries
+      if (newColumnOffset < 0 || newColumnOffset > GameOfLife.field.columnsAmount - 1) {
         continue;
       }
-      if (newRowState < 0 || newRowState > this.rows - 1) {
+      if (newRowOffset < 0 || newRowOffset > GameOfLife.field.rowsAmount - 1) {
         continue;
       }
 
-      const neighState = this.state.cells[newColState][newRowState];
-      if (neighState === this.cellState.alive) {
-        aliveNeighbors++;
+      const neighbourState = this.state.cells[newColumnOffset][newRowOffset];
+      if (neighbourState === GameOfLife.cellState.ALIVE) {
+        aliveNeighboursAmount++;
       }
     }
-    return aliveNeighbors;
-  }
-  // toggle cell states
-  toggleCellState(rows, cols) {
-    const newCellState = this.state.cells;
 
-    newCellState[rows][cols] = !newCellState[rows][cols];
-    this.setState({ state: newCellState });
+    return aliveNeighboursAmount;
   }
 
-  // start/stop game 
-  startGameButton() {
-    const buttonLabel = this.state.gameRunning ? "Stop" : "Start";
+  // endregion
+
+  // region User Interactions
+
+  toggleCellState(columnIndex, rowIndex) {
+    const newCellsState = this.state.cells;
+
+    newCellsState[columnIndex][rowIndex] = !newCellsState[columnIndex][rowIndex];
+
+    this.setState({ state: newCellsState })
+  }
+
+  toggleIsGameRunning() {
+    this.setState({ isGameRunning: !this.state.isGameRunning })
+  }
+
+  // endregion
+
+  // region Rendering
+
+  renderCells() {
+    return (
+      <div className="GameOfLife__cells">
+        {this.state.cells.map((rows, columnIndex) => {
+          return this.renderColumn(rows, columnIndex)
+        })}
+      </div>
+    );
+  }
+
+  renderColumn(rows, columnIndex) {
+    return (
+      <div className="GameOfLife__column" key={`column_${columnIndex}`}>
+        {rows.map((cellState, rowIndex) => {
+          const cellModifier = cellState === GameOfLife.cellState.DEAD ? 'dead' : 'alive';
+          return <div
+            className={`GameOfLife__cell GameOfLife__cell--${cellModifier}`}
+            key={`cell_${columnIndex}_${rowIndex}`}
+            onClick={() => this.toggleCellState(columnIndex, rowIndex)}
+          />
+        })}
+      </div>
+    )
+  }
+
+  renderStartGameButton() {
+    const buttonLabel = this.state.isGameRunning ? 'Stop' : 'Start';
 
     return (
-      <button className="Button" onClick={() => this.running()}>
+      <button
+        className="GameOfLife__startGameButton"
+        onClick={() => this.toggleIsGameRunning()}
+      >
         {buttonLabel}
       </button>
-    );
+    )
   }
 
   render() {
     return (
-      <div className="App">
-        Game Of Life
-        <div className="bodyContainer">{this.startGameButton()}</div>
-        <div className="gridContainer">
-          <div
-            className="Grid"
-            style={{
-              width: width,
-              height: height,
-              backgroundSize: `${cell}px ${cell}px`,
-            }}
-          ></div>
-        </div>
+      <div className="GameOfLife">
+        {this.renderStartGameButton()}
+        {this.renderCells()}
       </div>
     );
-  }
+  };
+
+  // endregion
+
 }
-
-
-export default App;
