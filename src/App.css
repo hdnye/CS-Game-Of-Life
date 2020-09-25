@@ -1,15 +1,17 @@
 .App {
-  margin: auto;
-  text-align: center;
-  display: flex;
-  justify-content: center;  
+  margin: auto; 
 }
 
 .cols {
     display: flex;
     flex-direction: column;
 }
-
+.cell {
+  display: flex;
+  justify-content: center;
+  margin: auto;
+  padding: 2%;
+}
 .cells {
     width: 20px;
     height: 20px;
@@ -25,7 +27,8 @@
 }
 
 .Button {  
-  margin: 50px auto;
+  margin: auto;
+  margin-top: 2%;
   display: flex;
   justify-content: center;  
 }
